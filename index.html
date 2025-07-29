@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha de RPG - Horror Psicológico 🖤</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖤 Sistema de RPG de Horror Psicológico 🖤</h1>
+            <p>Ficha de Personagem para 5 Jogadores • Dados Reais • Chamadas de Vídeo 🎲</p>
+        </div>
+
+        <div class="content">
+            <!-- Seção: Informações do Personagem -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🧑‍🎤 Informações do Personagem
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <!-- Área de Upload de Imagem -->
+                    <div class="form-group">
+                        <label>🖼️ Imagem do Personagem:</label>
+                        <div class="image-upload-area" onclick="document.getElementById('imageInput').click()" 
+                             ondrop="handleImageDrop(event)" ondragover="handleDragOver(event)" 
+                             ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
+                            <div id="imagePreview">
+                                <div class="upload-placeholder">📸 Clique ou arraste uma imagem aqui</div>
+                                <div class="upload-hint">Suporta: JPG, PNG, GIF, WebP (max 5MB)</div>
+                            </div>
+                        </div>
+                        <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="characterName">Nome do Personagem:</label>
+                        <input type="text" id="characterName" placeholder="Digite o nome do seu personagem">
+                    </div>
+                    <div class="form-group">
+                        <label for="personality">Personalidade:</label>
+                        <input type="text" id="personality" placeholder="Descreva a personalidade (ex: corajoso, cauteloso)">
+                    </div>
+                    <div class="form-group">
+                        <label for="background">História/Background:</label>
+                        <textarea id="background" rows="4" placeholder="Conte um pouco da história do seu personagem...&#10;&#10;• De onde veio?&#10;• O que o motivou a estar aqui?&#10;• Quais são seus medos?&#10;• Tem algum trauma do passado?"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Distribuição de Atributos -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    ⚡ Distribuição de Atributos
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="points-display">
+                        <h3>📊 Como Distribuir:</h3>
+                        <p>Use os valores <strong>12, 10, 10, 8, 8, 6, 6, 4</strong> uma vez cada um.</p>
+                        <div class="available-points" id="availablePoints">Pontos: 12, 10, 10, 8, 8, 6, 6, 4</div>
+                        <button class="btn btn-small" onclick="resetAttributes()">🔄 Resetar</button>
+                    </div>
+
+                    <div class="attribute-grid">
+                        <div class="attribute-item" id="attr-for">
+                            <label>💪 Força (FOR)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Esforços físicos">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-con">
+                            <label>🛡️ Constituição (CON)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Resistência">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-pre">
+                            <label>🕵️ Presença (PRE)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Furtividade">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-int">
+                            <label>🧠 Inteligência (INT)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Resolver enigmas">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-des">
+                            <label>🏃 Desvio (DES)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Esquivar ataques">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-pod">
+                            <label>✨ Poder (POD)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Resistir ilusões">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-apa">
+                            <label>😊 Aparência (APA)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Convencer NPCs">
+                            <div class="error-msg"></div>
+                        </div>
+                        <div class="attribute-item" id="attr-edu">
+                            <label>📚 Educação (EDU)</label>
+                            <input type="number" min="1" max="20" oninput="validateAttributes()" placeholder="Conhecimento">
+                            <div class="error-msg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Recursos Vitais -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    ❤️ Recursos Vitais
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="resources-container">
+                        <div class="resource-header">
+                            <label>Recurso</label>
+                            <label>Atual</label>
+                            <label>Máximo</label>
+                        </div>
+                        
+                        <div class="resource-grid">
+                            <label>❤️ Vida</label>
+                            <div class="resource-grid-mobile">
+                                <div class="input-group">
+                                    <span class="input-label">Atual:</span>
+                                    <input type="number" id="vida-atual" value="10" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-label">Máx:</span>
+                                    <input type="number" id="vida-max" value="10" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="resource-grid">
+                            <label>🧠 Sanidade</label>
+                            <div class="resource-grid-mobile">
+                                <div class="input-group">
+                                    <span class="input-label">Atual:</span>
+                                    <input type="number" id="sanidade-atual" value="10" min="0">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-label">Máx:</span>
+                                    <input type="number" id="sanidade-max" value="10" min="1">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="resource-grid">
+                            <label>💎 Fragmentos de Esperança</label>
+                            <div class="resource-grid-mobile">
+                                <div class="input-group">
+                                    <input type="number" id="esperanca-atual" value="20" min="0">
+                                </div>
+                                <span style="font-size: clamp(10px, 2vw, 12px); color: #cd853f; font-style: italic;">Moeda do jogo</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hunger-indicator">
+                        <label>🥀 Fome (0-5)</label>
+                        <input type="number" id="fome-atual" value="0" min="0" max="5">
+                        <small>1 ponto = -1 FOR/CON • 2 pontos = -1 FOR/CON/DES</small>
+                    </div>
+                    
+                    <div class="corruption-indicator">
+                        <label>😨 Corrupção (0-5)</label>
+                        <input type="number" id="corrupcao-atual" value="0" min="0" max="5">
+                        <small>Aumenta dificuldade de testes de Sanidade e Desvio</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Sistema de Dados -->
+            <div class="section full-width">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🎲 Sistema de Rolagem de Dados
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <h4 style="margin-bottom: 15px; color: #cd853f;">🎯 Dados Específicos do RPG:</h4>
+                    
+                    <div class="dice-grid">
+                        <div class="dice-card">
+                            <button class="btn dice-btn-special" onclick="rollD2()">❓ D2</button>
+                            <div class="dice-info">Sim ou Não<br>Checar verdades</div>
+                        </div>
+                        
+                        <div class="dice-card">
+                            <button class="btn dice-btn-special" onclick="rollD3()">💰 D3</button>
+                            <div class="dice-info">Preços do Dia<br>Economia</div>
+                        </div>
+                        
+                        <div class="dice-card">
+                            <button class="btn dice-btn-special" onclick="rollD4Combat()">⚔️ D4</button>
+                            <div class="dice-info">Dano Combate<br>Ataques</div>
+                        </div>
+                        
+                        <div class="dice-card">
+                            <button class="btn dice-btn-special" onclick="rollD6Attack()">🥊 D6</button>
+                            <div class="dice-info">Ataque/Ordem<br>Combate</div>
+                        </div>
+                        
+                        <div class="dice-card">
+                            <button class="btn dice-btn-special" onclick="rollD20Skill()">🎯 D20</button>
+                            <div class="dice-info">Teste Habilidade<br>Atributos</div>
+                        </div>
+                        
+                        <div class="dice-card">
+                            <button class="btn dice-btn-special" onclick="rollD100Luck()">🍀 D100</button>
+                            <div class="dice-info">Sorte do Dia<br>Bônus/Penalidades</div>
+                        </div>
+                    </div>
+
+                    <!-- Sorte do Dia Atual -->
+                    <div class="luck-display" id="luckDisplay" style="display: none;">
+                        <h4>🍀 Sorte do Dia Atual:</h4>
+                        <div id="currentLuck" class="current-luck"></div>
+                    </div>
+
+                    <h4 style="margin-top: 20px; color: #cd853f;">📜 Histórico de Rolagens:</h4>
+                    <div class="history-box" id="diceHistory">
+                        <div class="history-item">Nenhuma rolagem ainda...</div>
+                    </div>
+                    <button class="btn btn-small" onclick="clearHistory()" style="margin-top: 10px;">🗑️ Limpar Histórico</button>
+                </div>
+            </div>
+
+            <!-- Seção: Evolução com XP -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    🎓 Evolução do Personagem
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="xp-atual">💫 Pontos de Experiência (XP):</label>
+                        <input type="number" id="xp-atual" value="0" min="0" max="10">
+                        <small>Máximo: 10 XP • Ganhe 2-5 XP por missão, 1 XP por feito heroico</small>
+                    </div>
+
+                    <div class="xp-evolution">
+                        <h4>📊 Tabela de Melhorias (Use durante descansos):</h4>
+                        <table class="evolution-table">
+                            <tr>
+                                <th>Melhoria</th>
+                                <th>Custo</th>
+                                <th>Risco</th>
+                            </tr>
+                            <tr>
+                                <td>+1 Atributo (máx +2)</td>
+                                <td>3 XP</td>
+                                <td>D20 EDU (15+) ou +1 Corrupção</td>
+                            </tr>
+                            <tr>
+                                <td>+2 Vida (máx +4)</td>
+                                <td>2 XP + 5 💎</td>
+                                <td>Nenhum</td>
+                            </tr>
+                            <tr>
+                                <td>+2 Sanidade (máx +4)</td>
+                                <td>3 XP + 5 💎</td>
+                                <td>D20 POD (15+) ou +1 Corrupção</td>
+                            </tr>
+                            <tr>
+                                <td>Habilidade Especial</td>
+                                <td>4 XP</td>
+                                <td>Varia por habilidade</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção: Anotações -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    📝 Anotações e Inventário
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="inventory">🎒 Inventário:</label>
+                        <textarea id="inventory" rows="4" placeholder="Liste seus itens aqui:&#10;&#10;• Faca D4 - Arma corpo a corpo&#10;• Lamparina - Iluminação por 2 horas&#10;• Corda (10m) - Escalada e amarras&#10;• Poção de Cura - Restaura 3 pontos de vida"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">📋 Anotações Gerais:</label>
+                        <textarea id="notes" rows="6" placeholder="Anote informações importantes aqui:&#10;&#10;🔍 Pistas descobertas:&#10;• &#10;&#10;👥 Contatos NPCs:&#10;• &#10;&#10;🎯 Objetivos atuais:&#10;• &#10;&#10;⚠️ Perigos identificados:&#10;• "></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="abilities">✨ Habilidades Especiais:</label>
+                        <textarea id="abilities" rows="3" placeholder="Liste habilidades adquiridas com XP:&#10;&#10;• Ex: Sobrevivente - +2 em testes de DES contra armadilhas&#10;• Ex: Estudioso - +2 em testes de INT para decifrar textos"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="action-buttons">
+                <button class="btn" onclick="saveCharacter()">💾 Salvar Ficha</button>
+                <button class="btn" onclick="loadCharacter()">📂 Carregar Ficha</button>
+                <button class="btn" onclick="exportCharacter()">📤 Exportar JSON</button>
+                <button class="btn" onclick="importCharacter()">📥 Importar JSON</button>
+                <button class="btn" onclick="printSheet()">🖨️ Imprimir</button>
+                <button class="btn btn-danger" onclick="clearCharacter()">🗑️ Nova Ficha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para rolagem de dados -->
+    <div class="modal" id="diceModal">
+        <div class="modal-content">
+            <h3 id="diceTitle">Rolagem</h3>
+            <p id="diceResult">Resultado: </p>
+            <button class="btn" onclick="closeDiceModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- Toast para notificações -->
+    <div class="toast" id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
