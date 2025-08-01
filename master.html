@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Mestre - RPG de Horror Psicológico</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Shared JS -->
+    <script src="shared.js"></script>
+</head>
+<body>
+    <div id="navbar-placeholder"></div> <!-- Placeholder for Navbar -->
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Área do Mestre</h1>
+        <p class="text-center">Sessão Atual: <strong id="current-session-id"></strong></p>
+        <!-- O botão Sair agora está na navbar -->
+
+        <hr>
+
+        <!-- Seção da Ficha do Mestre (Visão Geral dos Jogadores) -->
+        <div id="ficha-mestre" class="mb-4">
+            <h2 class="mb-3">Ficha do Mestre (Visão Geral dos Jogadores)</h2>
+            <div id="lista-personagens-mestre" class="row">
+                <!-- Fichas resumidas dos jogadores serão preenchidas por JS -->
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Seção de Controles do Mestre -->
+        <div id="controles-mestre" class="mb-4">
+            <h2 class="mb-3">Controles do Mestre</h2>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <h3>Rolagem de D3 (Preços do Dia)</h3>
+                    <button class="btn btn-primary w-100" onclick="rolarD3Mestre()">Rolar D3</button>
+                    <p class="mt-2">Preço do Dia: <strong id="preco-do-dia-info">Normal</strong></p>
+                </div>
+                <div class="col-md-4">
+                    <h3>Adicionar Fragmentos</h3>
+                    <div class="input-group">
+                        <input type="number" id="input-fragmentos-mestre" class="form-control" value="10" min="1">
+                        <button class="btn btn-primary" onclick="adicionarFragmentosMestre()">Adicionar</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h3>Restaurar Vida</h3>
+                    <div class="input-group">
+                        <input type="number" id="input-vida-mestre" class="form-control" value="1" min="1">
+                        <button class="btn btn-primary" onclick="restaurarVidaMestre()">Restaurar</button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <h3>Avançar Fases do Dia</h3>
+                    <button class="btn btn-primary w-100" onclick="avancarFaseDia()">Avançar 1 Fase do Dia</button>
+                    <p class="mt-2">Fase Atual: <strong id="fase-atual-dia">Manhã</strong></p>
+                    <p>Dias Passados: <strong id="dias-passados">0</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Seção de Gerenciamento de Jogadores e Criação de Personagem -->
+        <div id="gerenciamento-jogadores" class="mb-4">
+            <h2 class="mb-3">Gerenciamento de Jogadores</h2>
+            <p class="text-center">Compartilhe o ID da sessão (<strong id="session-id-display"></strong>) com seus jogadores para que eles possam entrar.</p>
+            
+            <h3 class="mt-4">Jogadores na Sessão</h3>
+            <ul id="players-in-session-list" class="list-group">
+                <!-- Lista de todos os usuários associados à sessão -->
+            </ul>
+        </div>
+
+        <hr>
+
+        <!-- Seção de Recursos Gemini API -->
+        <div id="gemini-features" class="mb-4">
+            <h2 class="mb-3">Recursos Gemini API</h2>
+
+            <div class="mb-3">
+                <h3>Gerador de Diálogo de NPC ✨</h3>
+                <label for="npc-context" class="form-label">Contexto do NPC e situação:</label>
+                <textarea id="npc-context" class="form-control" rows="4" placeholder="Ex: Um guarda cansado e desconfiado, você tenta suborná-lo com 5 fragmentos. O que ele diz?"></textarea><br>
+                <button class="btn btn-info mt-2" onclick="generateNpcDialogue()">Gerar Diálogo NPC ✨</button>
+                <p id="npc-dialogue-loading" class="text-muted mt-2" style="display: none;">Carregando...</p>
+                <label for="npc-dialogue-output" class="form-label mt-3">Diálogo Gerado:</label>
+                <textarea id="npc-dialogue-output" class="form-control" rows="4" readonly></textarea>
+            </div>
+
+            <div class="mb-3">
+                <h3>Gerador de Consequência/Reviravolta ✨</h3>
+                <label for="consequence-context" class="form-label">Situação atual (ex: Após falha em teste de Força):</label>
+                <textarea id="consequence-context" class="form-control" rows="4" placeholder="Ex: O jogador falhou em escalar a parede, está pendurado e a corda está escorregadia. Qual a consequência inesperada?"></textarea><br>
+                <button class="btn btn-info mt-2" onclick="generateConsequence()">Gerar Consequência/Reviravolta ✨</button>
+                <p id="consequence-loading" class="text-muted mt-2" style="display: none;">Carregando...</p>
+                <label for="consequence-output" class="form-label mt-3">Consequência/Reviravolta Gerada:</label>
+                <textarea id="consequence-output" class="form-control" rows="4" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        const userRole = localStorage.getItem('userRole');
+        const userId = localStorage.getItem('userId');
+        const activeSessionId = localStorage.getItem('activeSessionId');
+
+        // Autenticação e Autorização
+        if (userRole !== 'Master' || !activeSessionId) {
+            showModal('Acesso Negado', 'Você não é o Mestre ou não está em uma sessão ativa.', 'danger', () => {
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Carrega o estado da sessão após a validação
+        loadRPGSessionState();
+
+        document.getElementById('current-session-id').textContent = activeSessionId;
+        document.getElementById('session-id-display').textContent = activeSessionId; // Para exibir no gerenciamento
+
+        // --- Funções de Atualização da UI ---
+        function atualizarUI() {
+            if (!currentSession) {
+                showModal('Erro de Sessão', 'Sessão não encontrada ou não carregada. Por favor, tente novamente.', 'danger', () => {
+                    logout();
+                });
+                return;
+            }
+
+            atualizarFichaMestre();
+
+            document.getElementById('preco-do-dia-info').textContent = currentSession.currentGameState.PrecoDoDiaFator === 1 ? 'Preços caem 25%' : (currentSession.currentGameState.PrecoDoDiaFator === 3 ? 'Preços sobem 50%' : 'Normal');
+            document.getElementById('fase-atual-dia').textContent = MecanicasJogo.FasesDia[currentSession.currentGameState.FaseAtualIndex];
+            document.getElementById('dias-passados').textContent = currentSession.currentGameState.DiasPassados;
+
+            atualizarListaJogadoresNaSessao();
+
+            saveRPGSessionState(); // Salva o estado da sessão
+        }
+
+        function atualizarFichaMestre() {
+            const listaPersonagensMestre = document.getElementById('lista-personagens-mestre');
+            listaPersonagensMestre.innerHTML = '';
+
+            if (currentSession.Personagens.length === 0) {
+                listaPersonagensMestre.innerHTML = '<div class="col-12"><p class="text-center">Nenhum personagem criado ainda nesta sessão.</p></div>';
+                return;
+            }
+
+            currentSession.Personagens.forEach((player) => {
+                const divPlayer = document.createElement('div');
+                divPlayer.className = 'col-md-6 mb-3';
+                divPlayer.innerHTML = `
+                    <div class="character-card">
+                        <div class="text-center">
+                            <img src="${player.ImagemURL || 'https://placehold.co/100x100/c7b299/3a2b1f?text=IMG'}" alt="Imagem do Personagem" class="img-fluid rounded-circle mb-2">
+                        </div>
+                        <h4 class="text-center">${player.Nome} <small class="text-muted">(ID: ${player.ID.substring(0, 8)}...)</small></h4>
+                        <p><strong>Vida:</strong> ${player.Recursos.Vida.ValorAtual}/${player.Recursos.Vida.ValorMaximo}</p>
+                        <p><strong>Sanidade:</strong> ${player.Recursos.Sanidade.ValorAtual}/${player.Recursos.Sanidade.ValorMaximo}</p>
+                        <p><strong>Fragmentos:</strong> ${player.Recursos.FragmentosEsperanca.ValorAtual}</p>
+                        <p><strong>Fome:</strong> ${player.Recursos.Fome.Pontos}</p>
+                        <p><strong>Corrupção:</strong> ${player.Recursos.Corrupcao.Pontos}</p>
+                        <p><strong>Condições:</strong> ${player.Estado.Condicao.join(', ') || 'Normal'}</p>
+                    </div>
+                `;
+                listaPersonagensMestre.appendChild(divPlayer);
+            });
+        }
+
+        function atualizarListaJogadoresNaSessao() {
+            const playersInSessionList = document.getElementById('players-in-session-list');
+            playersInSessionList.innerHTML = '';
+
+            const allUserIdsInSession = JSON.parse(localStorage.getItem('sessionUsers') || '[]');
+            
+            if (allUserIdsInSession.length === 0) {
+                playersInSessionList.innerHTML = '<li class="list-group-item text-center">Nenhum jogador associado a esta sessão ainda.</li>';
+                return;
+            }
+
+            allUserIdsInSession.forEach(sessionUser => {
+                const playerChar = currentSession.Personagens.find(p => p.OwnerUserID === sessionUser.userId);
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `Jogador ID: <strong>${sessionUser.userId.substring(0, 8)}...</strong> - 
+                                Status: ${playerChar ? `Personagem: <strong>${playerChar.Nome}</strong>` : 'Sem Personagem'}`;
+                playersInSessionList.appendChild(li);
+            });
+        }
+
+        // --- Funções de Controles do Mestre ---
+        function rolarD3Mestre() {
+            currentSession.currentGameState.PrecoDoDiaFator = rolarDado(3);
+            showToast(`Preço do dia rolado: ${currentSession.currentGameState.PrecoDoDiaFator}.`, 'info');
+            atualizarUI();
+        }
+
+        function adicionarFragmentosMestre() {
+            if (currentSession.Personagens.length === 0) {
+                showToast("Nenhum personagem para adicionar fragmentos.", 'warning');
+                return;
+            }
+            const personagemAlvo = currentSession.Personagens[0]; // Simplificado para o primeiro personagem
+            const quantidade = parseInt(document.getElementById('input-fragmentos-mestre').value);
+            if (isNaN(quantidade) || quantidade <= 0) {
+                showToast('Por favor, insira uma quantidade válida e positiva.', 'danger');
+                return;
+            }
+            personagemAlvo.Recursos.FragmentosEsperanca.ValorAtual += quantidade;
+            showToast(`Adicionado ${quantidade} Fragmentos de Esperança ao ${personagemAlvo.Nome}.`, 'success');
+            atualizarUI();
+        }
+
+        function restaurarVidaMestre() {
+            if (currentSession.Personagens.length === 0) {
+                showToast("Nenhum personagem para restaurar vida.", 'warning');
+                return;
+            }
+            const personagemAlvo = currentSession.Personagens[0]; // Simplificado para o primeiro personagem
+            const quantidade = parseInt(document.getElementById('input-vida-mestre').value);
+            if (isNaN(quantidade) || quantidade <= 0) {
+                showToast('Por favor, insira uma quantidade válida e positiva.', 'danger');
+                return;
+            }
+
+            const vidaAntes = personagemAlvo.Recursos.Vida.ValorAtual;
+            personagemAlvo.Recursos.Vida.ValorAtual = Math.min(
+                personagemAlvo.Recursos.Vida.ValorMaximo,
+                personagemAlvo.Recursos.Vida.ValorAtual + quantidade
+            );
+            const vidaRestaurada = personagemAlvo.Recursos.Vida.ValorAtual - vidaAntes;
+
+            showToast(`Restaurado ${vidaRestaurada} de Vida para ${personagemAlvo.Nome}. Vida atual: ${personagemAlvo.Recursos.Vida.ValorAtual}.`, 'success');
+            atualizarUI();
+        }
+
+        function avancarFaseDia() {
+            if (currentSession.Personagens.length === 0) {
+                showToast("Nenhum personagem na sessão para avançar a fase do dia.", 'warning');
+                return;
+            }
+
+            currentSession.Personagens.forEach(player => {
+                player.Recursos.Fome.Pontos = Math.min(MecanicasJogo.TratamentoLimitesRecursos.FomeMaxima, player.Recursos.Fome.Pontos + 1);
+            });
+            showToast(`Avançou para a próxima fase do dia. Todos os personagens ganharam 1 ponto de Fome.`, 'info');
+
+            currentSession.currentGameState.FaseAtualIndex++;
+            if (currentSession.currentGameState.FaseAtualIndex >= MecanicasJogo.FasesDia.length) {
+                currentSession.currentGameState.FaseAtualIndex = 0;
+                currentSession.currentGameState.DiasPassados++;
+                showToast(`Um novo dia começou! Dia ${currentSession.currentGameState.DiasPassados}.`, 'info');
+                rolarD3Mestre(); // Rola os preços para o novo dia
+            }
+            atualizarUI();
+        }
+
+        // --- Funções Gemini API ---
+        async function generateNpcDialogue() {
+            const npcContext = document.getElementById('npc-context').value;
+            const outputElement = document.getElementById('npc-dialogue-output');
+            const loadingElement = document.getElementById('npc-dialogue-loading');
+
+            if (!npcContext.trim()) {
+                showToast("Por favor, forneça um contexto para o NPC.", 'warning');
+                return;
+            }
+
+            outputElement.value = '';
+            loadingElement.style.display = 'block';
+
+            const prompt = `No contexto de um RPG de horror psicológico, gere uma linha de diálogo ou uma breve reação para um NPC com base no seguinte cenário: "${npcContext}". Mantenha o tom sombrio e tenso.`;
+
+            try {
+                const responseText = await callGeminiAPI(prompt);
+                outputElement.value = responseText || "Não foi possível gerar o diálogo. Tente novamente.";
+                showToast("Diálogo de NPC gerado com sucesso!", 'success');
+            } catch (error) {
+                outputElement.value = `Erro ao gerar diálogo: ${error.message}`;
+                showToast(`Erro ao gerar diálogo: ${error.message}`, 'danger');
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        async function generateConsequence() {
+            const consequenceContext = document.getElementById('consequence-context').value;
+            const outputElement = document.getElementById('consequence-output');
+            const loadingElement = document.getElementById('consequence-loading');
+
+            if (!consequenceContext.trim()) {
+                showToast("Por favor, forneça um contexto para a consequência/reviravolta.", 'warning');
+                return;
+            }
+
+            outputElement.value = '';
+            loadingElement.style.display = 'block';
+
+            const prompt = `Em um RPG de horror psicológico, o seguinte evento ocorreu: "${consequenceContext}". Gere uma consequência inesperada ou uma reviravolta na trama que aumente a tensão ou o dilema moral.`;
+
+            try {
+                const responseText = await callGeminiAPI(prompt);
+                outputElement.value = responseText || "Não foi possível gerar a consequência. Tente novamente.";
+                showToast("Consequência gerada com sucesso!", 'success');
+            } catch (error) {
+                outputElement.value = `Erro ao gerar consequência: ${error.message}`;
+                showToast(`Erro ao gerar consequência: ${error.message}`, 'danger');
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNavbar('master'); // Passa o identificador da página atual
+            atualizarUI();
+        });
+    </script>
+</body>
+</html>

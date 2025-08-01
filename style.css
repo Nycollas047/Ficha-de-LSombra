@@ -1,0 +1,340 @@
+/* style.css */
+
+/* Importar fontes do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+    --color-background-light: #f8f0e3; /* Creme claro, como pergaminho */
+    --color-background-dark: #e0d8c9;  /* Sépia suave */
+    --color-text-dark: #3a2b1f;       /* Marrom escuro, como tinta */
+    --color-text-light: #f8f0e3;      /* Para texto em fundos escuros */
+    --color-accent-gold: #b8860b;     /* Dourado para detalhes */
+    --color-accent-red: #8b0000;      /* Vermelho escuro para alertas/dano */
+    --color-border: #7a6a5a;          /* Marrom para bordas */
+    --color-button-bg: #c7b299;       /* Fundo de botão tipo pergaminho */
+    --color-button-hover: #a8947e;    /* Hover de botão */
+    --color-input-bg: #fffbf5;        /* Fundo de input claro */
+    --color-shadow: rgba(0, 0, 0, 0.2); /* Sombra suave */
+}
+
+body {
+    font-family: 'Old Standard TT', serif; /* Fonte para o corpo do texto */
+    background-color: var(--color-background-light);
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    padding: 0; /* Removido padding para a navbar fixa */
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Merriweather', serif; /* Fonte para títulos */
+    color: var(--color-text-dark);
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 1px 1px 2px var(--color-shadow);
+}
+
+.container {
+    background-color: var(--color-background-dark);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 5px 5px 15px var(--color-shadow);
+    padding: 30px;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Efeito de pergaminho nas bordas */
+.container::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 5px dashed var(--color-accent-gold); /* Bordas rasgadas */
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+hr {
+    border: none;
+    border-top: 1px dashed var(--color-border);
+    margin: 20px 0;
+}
+
+/* Botões */
+.btn {
+    background-color: var(--color-button-bg);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Merriweather', serif;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    box-shadow: 2px 2px 5px var(--color-shadow);
+    text-decoration: none; /* Para links que parecem botões */
+    display: inline-block;
+    text-align: center;
+}
+
+.btn:hover {
+    background-color: var(--color-button-hover);
+    transform: translateY(-1px);
+    box-shadow: 3px 3px 7px var(--color-shadow);
+}
+
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 1px 1px 3px var(--color-shadow);
+}
+
+/* Override Bootstrap Primary/Secondary/Info/Danger buttons for theme */
+.btn-primary, .btn-secondary, .btn-info, .btn-danger, .btn-success, .btn-warning {
+    color: var(--color-text-dark); /* Ensure text is dark on these */
+    border-color: var(--color-border);
+}
+
+.btn-primary { background-color: var(--color-accent-gold); }
+.btn-primary:hover { background-color: #a07800; } /* Darker gold */
+
+.btn-secondary { background-color: var(--color-button-bg); }
+.btn-secondary:hover { background-color: var(--color-button-hover); }
+
+.btn-info { background-color: #87ceeb; } /* Light blue, can adjust */
+.btn-info:hover { background-color: #6495ed; }
+
+.btn-danger { background-color: var(--color-accent-red); color: var(--color-text-light); border-color: #6a0000; }
+.btn-danger:hover { background-color: #6a0000; }
+
+.btn-success { background-color: #4CAF50; color: var(--color-text-light); border-color: #388E3C; }
+.btn-success:hover { background-color: #388E3C; }
+
+.btn-warning { background-color: #ffc107; color: var(--color-text-dark); border-color: #e0a800; }
+.btn-warning:hover { background-color: #e0a800; }
+
+.btn-outline-danger {
+    color: var(--color-accent-red);
+    border-color: var(--color-accent-red);
+    background-color: transparent;
+}
+.btn-outline-danger:hover {
+    background-color: var(--color-accent-red);
+    color: var(--color-text-light);
+}
+
+
+/* Formulários e Inputs */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-control {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background-color: var(--color-input-bg);
+    color: var(--color-text-dark);
+    font-family: 'Old Standard TT', serif;
+    box-sizing: border-box;
+}
+
+select.form-control {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M2%200L0%202h4L2%200zM2%205L0%203h4L2%205z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.7em top 50%, 0 0;
+    background-size: 0.65em auto, 100%;
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+/* Mensagens de status */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+
+/* Modais (simples, para substituir alerts/confirms) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--color-background-dark);
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 5px 5px 15px var(--color-shadow);
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal-content h3 {
+    color: var(--color-text-dark);
+    margin-top: 0;
+}
+
+.modal-content .modal-actions {
+    margin-top: 20px;
+}
+
+.modal-content .modal-actions button {
+    margin: 0 10px;
+}
+
+/* Estilos específicos para a lista de personagens (Mestre) */
+.character-card {
+    background-color: var(--color-input-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 2px 2px 5px var(--color-shadow);
+}
+
+.character-card h4 {
+    color: var(--color-accent-gold);
+    margin-top: 0;
+}
+
+.character-card img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent-gold);
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+/* Estilos para a ficha do jogador */
+.profile-image-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-image-container img {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 50%;
+    border: 3px solid var(--color-accent-gold);
+    object-fit: cover;
+    box-shadow: 3px 3px 8px var(--color-shadow);
+}
+
+.profile-image-container input[type="file"] {
+    display: block;
+    margin: 10px auto;
+    padding: 5px;
+    background-color: var(--color-button-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.profile-image-container input[type="file"]::-webkit-file-upload-button {
+    background-color: var(--color-button-hover);
+    color: var(--color-text-dark);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+/* Navbar Customization */
+.navbar {
+    background-color: var(--color-background-dark) !important; /* Override Bootstrap default */
+    border-bottom: 2px solid var(--color-border);
+}
+
+.navbar-brand, .navbar-nav .nav-link {
+    font-family: 'Merriweather', serif;
+    color: var(--color-text-dark) !important;
+}
+
+.navbar-nav .nav-link.active {
+    color: var(--color-accent-gold) !important;
+    font-weight: bold;
+}
+
+.navbar-text {
+    color: var(--color-text-dark) !important;
+}
+
+
+/* Responsividade básica com Bootstrap */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .modal-content {
+        padding: 20px;
+    }
+    .navbar-text {
+        display: block; /* Stack user/session ID on small screens */
+        margin-bottom: 5px;
+    }
+}

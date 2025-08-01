@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criação de Personagem - RPG de Horror Psicológico</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Shared JS -->
+    <script src="shared.js"></script>
+</head>
+<body>
+    <div id="navbar-placeholder"></div> <!-- Placeholder for Navbar -->
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Criação de Personagem</h1>
+        <p class="text-center">Sessão Atual: <strong id="current-session-id"></strong></p>
+        <p class="text-center">Seu ID de Usuário: <strong id="current-user-id"></strong></p>
+
+        <div id="criacao-form">
+            <div class="form-group mb-3">
+                <label for="input-nome-personagem" class="form-label">Nome do Personagem:</label>
+                <input type="text" id="input-nome-personagem" class="form-control" value="Novo Aventureiro">
+            </div>
+            <div class="form-group mb-3">
+                <label for="input-personalidade" class="form-label">Personalidade:</label>
+                <input type="text" id="input-personalidade" class="form-control" value="Curioso">
+            </div>
+
+            <div class="profile-image-container mb-4">
+                <img id="personagem-imagem-preview" src="https://placehold.co/150x150/c7b299/3a2b1f?text=IMG" alt="Pré-visualização da Imagem">
+                <input type="file" id="image-upload-input" accept="image/*" class="form-control">
+                <small class="form-text text-muted">Faça upload de uma imagem para seu personagem (opcional, max 5MB).</small>
+            </div>
+
+            <h3 class="mt-4">Atributos</h3>
+            <p class="text-center">Valores Disponíveis: <strong id="valores-disponiveis-atributos"></strong></p>
+            
+            <div id="distribuicao-atributos" class="row">
+                <!-- Atributos serão preenchidos dinamicamente aqui -->
+            </div>
+            <div class="d-grid gap-2 mt-4">
+                <button class="btn btn-primary" onclick="finalizarCriacaoPersonagem()">Finalizar Criação de Personagem</button>
+            </div>
+            <p id="status-criacao" class="alert alert-danger mt-3" style="display: none;"></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Carrega o estado da sessão
+        loadRPGSessionState();
+
+        const userRole = localStorage.getItem('userRole');
+        const userId = localStorage.getItem('userId');
+        const activeSessionId = localStorage.getItem('activeSessionId');
+        const associatedCharacterId = localStorage.getItem('associatedCharacterId');
+
+        // Redireciona se não for jogador, não estiver em sessão, ou já tiver personagem
+        if (userRole !== 'Player' || !activeSessionId) {
+            showModal('Acesso Negado', 'Você não é um Jogador ou não está em uma sessão ativa. Redirecionando.', 'danger', () => {
+                window.location.href = 'index.html';
+            });
+        }
+        if (associatedCharacterId !== 'null' && currentSession && currentSession.Personagens.find(p => p.ID === associatedCharacterId && p.OwnerUserID === userId)) {
+            showModal('Personagem Existente', 'Você já tem um personagem para esta sessão. Redirecionando para sua ficha.', 'info', () => {
+                window.location.href = 'player.html';
+            });
+        }
+
+        document.getElementById('current-session-id').textContent = activeSessionId;
+        document.getElementById('current-user-id').textContent = userId;
+
+        let valoresAtributosDisponiveis = [...PersonagemTemplate.Atributos.ValoresDisponiveisParaDistribuicao];
+        let atributosTemporarios = {}; // Para armazenar os valores enquanto o jogador distribui
+        let uploadedImageURL = null; // Para armazenar a URL da imagem temporariamente
+
+        // --- Funções de Upload de Imagem ---
+        document.getElementById('image-upload-input').addEventListener('change', handleImageUpload);
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const MAX_SIZE_MB = 5;
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+
+            if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                showToast(`Erro: Imagem muito grande. Max ${MAX_SIZE_MB}MB.`, 'danger');
+                event.target.value = ''; // Limpa o input
+                uploadedImageURL = null;
+                document.getElementById('personagem-imagem-preview').src = 'https://placehold.co/150x150/c7b299/3a2b1f?text=IMG';
+                return;
+            }
+
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                showToast('Erro: Tipo de arquivo não permitido. Use JPG, PNG ou GIF.', 'danger');
+                event.target.value = ''; // Limpa o input
+                uploadedImageURL = null;
+                document.getElementById('personagem-imagem-preview').src = 'https://placehold.co/150x150/c7b299/3a2b1f?text=IMG';
+                return;
+            }
+
+            // Simulação de upload: ler como URL de dados para pré-visualização
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                uploadedImageURL = e.target.result;
+                document.getElementById('personagem-imagem-preview').src = uploadedImageURL;
+                showToast('Imagem pronta para pré-visualização!', 'info');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function inicializarDistribuicaoAtributos() {
+            const divDistribuicao = document.getElementById('distribuicao-atributos');
+            divDistribuicao.innerHTML = '';
+            document.getElementById('valores-disponiveis-atributos').textContent = valoresAtributosDisponiveis.join(', ');
+
+            const atributosNomes = Object.keys(PersonagemTemplate.Atributos).filter(key => key !== 'ValoresDisponiveisParaDistribuicao' && key !== 'LogicaDeDistribuicao');
+
+            atributosNomes.forEach(attrName => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'col-md-6 mb-3'; // Usar grid do Bootstrap
+                
+                const formGroupDiv = document.createElement('div');
+                formGroupDiv.className = 'form-group';
+
+                const label = document.createElement('label');
+                label.className = 'form-label';
+                label.textContent = `${attrName}: `;
+                
+                const select = document.createElement('select');
+                select.id = `select-attr-${attrName}`;
+                select.className = 'form-select';
+                select.onchange = () => atribuirAtributo(attrName, select.value);
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = "Selecione um valor";
+                select.appendChild(defaultOption);
+
+                valoresAtributosDisponiveis.sort((a, b) => a - b).forEach(val => {
+                    const option = document.createElement('option');
+                    option.value = val;
+                    option.textContent = val;
+                    select.appendChild(option);
+                });
+                
+                formGroupDiv.appendChild(label);
+                formGroupDiv.appendChild(select);
+                colDiv.appendChild(formGroupDiv);
+                divDistribuicao.appendChild(colDiv);
+            });
+        }
+
+        function atribuirAtributo(attrName, valor) {
+            const valorNum = parseInt(valor);
+            const statusCriacao = document.getElementById('status-criacao');
+            statusCriacao.style.display = 'none';
+
+            // Se já havia um valor atribuído a este atributo, devolve-o ao pool
+            if (atributosTemporarios[attrName]) {
+                valoresAtributosDisponiveis.push(atributosTemporarios[attrName]);
+            }
+
+            if (valorNum) {
+                const index = valoresAtributosDisponiveis.indexOf(valorNum);
+                if (index > -1) {
+                    valoresAtributosDisponiveis.splice(index, 1); // Remove do pool
+                    atributosTemporarios[attrName] = valorNum; // Atribui ao personagem
+                } else {
+                    showToast(`O valor ${valorNum} já foi usado ou não está disponível.`, 'danger');
+                    document.getElementById(`select-attr-${attrName}`).value = ""; // Reseta o select
+                    delete atributosTemporarios[attrName];
+                }
+            } else {
+                // Se o valor foi deselecionado, remove do personagem
+                delete atributosTemporarios[attrName];
+            }
+
+            document.getElementById('valores-disponiveis-atributos').textContent = valoresAtributosDisponiveis.join(', ');
+            
+            // Atualiza as opções de todos os selects para refletir os valores disponíveis
+            const atributosNomes = Object.keys(PersonagemTemplate.Atributos).filter(key => key !== 'ValoresDisponiveisParaDistribuicao' && key !== 'LogicaDeDistribuicao');
+            atributosNomes.forEach(name => {
+                const select = document.getElementById(`select-attr-${name}`);
+                const currentValue = select.value; // Mantém o valor atual selecionado
+
+                select.innerHTML = '';
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = "Selecione um valor";
+                select.appendChild(defaultOption);
+                
+                // Adiciona os valores disponíveis
+                valoresAtributosDisponiveis.sort((a, b) => a - b).forEach(val => {
+                    const option = document.createElement('option');
+                    option.value = val;
+                    option.textContent = val;
+                    select.appendChild(option);
+                });
+
+                // Se o atributo já tem um valor atribuído (e ele não está mais no pool de disponíveis),
+                // garante que essa opção ainda esteja visível e selecionada.
+                if (atributosTemporarios[name] && !valoresAtributosDisponiveis.includes(atributosTemporarios[name])) {
+                    const option = document.createElement('option');
+                    option.value = atributosTemporarios[name];
+                    option.textContent = atributosTemporarios[name];
+                    select.appendChild(option);
+                }
+                select.value = currentValue; // Restaura a seleção
+            });
+        }
+
+        function finalizarCriacaoPersonagem() {
+            const nomePersonagem = document.getElementById('input-nome-personagem').value.trim();
+            const personalidade = document.getElementById('input-personalidade').value.trim();
+            const statusCriacao = document.getElementById('status-criacao');
+            statusCriacao.style.display = 'none'; // Esconde mensagem anterior
+
+            if (!nomePersonagem) {
+                statusCriacao.textContent = 'Por favor, insira um nome para o personagem.';
+                statusCriacao.style.display = 'block';
+                return;
+            }
+            if (!personalidade) {
+                statusCriacao.textContent = 'Por favor, insira uma personalidade para o personagem.';
+                statusCriacao.style.display = 'block';
+                return;
+            }
+
+            const atributosNomes = Object.keys(PersonagemTemplate.Atributos).filter(key => key !== 'ValoresDisponiveisParaDistribuicao' && key !== 'LogicaDeDistribuicao');
+            if (Object.keys(atributosTemporarios).length !== atributosNomes.length) {
+                statusCriacao.textContent = 'Por favor, atribua um valor a cada atributo.';
+                statusCriacao.style.display = 'block';
+                return;
+            }
+            if (valoresAtributosDisponiveis.length > 0) {
+                 statusCriacao.textContent = 'Por favor, use todos os valores disponíveis para os atributos.';
+                 statusCriacao.style.display = 'block';
+                 return;
+            }
+
+            const somaAtributos = Object.values(atributosTemporarios).reduce((sum, val) => sum + val, 0);
+            if (somaAtributos !== 64) {
+                statusCriacao.textContent = `A soma dos atributos deve ser 64. Soma atual: ${somaAtributos}.`;
+                statusCriacao.style.display = 'block';
+                return;
+            }
+
+            let novoPersonagem = JSON.parse(JSON.stringify(PersonagemTemplate));
+            novoPersonagem.ID = generateUUID();
+            novoPersonagem.OwnerUserID = userId;
+            novoPersonagem.SessionID = activeSessionId; // Associa o personagem à sessão
+            novoPersonagem.Nome = nomePersonagem;
+            novoPersonagem.Personalidade = personalidade;
+            novoPersonagem.ImagemURL = uploadedImageURL; // Atribui a URL da imagem
+
+            for (const attrName in atributosTemporarios) {
+                novoPersonagem.Atributos[attrName].Valor = atributosTemporarios[attrName];
+            }
+
+            // Adiciona o novo personagem ao array de personagens da sessão
+            currentSession.Personagens.push(novoPersonagem);
+            localStorage.setItem('associatedCharacterId', novoPersonagem.ID); // Vincula o personagem ao usuário
+            
+            // Atualiza o registro de usuários da sessão (para o Mestre ver)
+            let sessionUsers = JSON.parse(localStorage.getItem('sessionUsers') || '[]');
+            let currentUserEntry = sessionUsers.find(u => u.userId === userId);
+            if (currentUserEntry) {
+                currentUserEntry.associatedCharacterId = novoPersonagem.ID;
+            } else {
+                sessionUsers.push({ userId: userId, associatedCharacterId: novoPersonagem.ID });
+            }
+            localStorage.setItem('sessionUsers', JSON.stringify(sessionUsers));
+
+            saveRPGSessionState(); // Salva o objeto de sessão completo
+            
+            showModal('Personagem Criado!', `Seu personagem "${nomePersonagem}" foi criado com sucesso!`, 'success', () => {
+                window.location.href = 'player.html';
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNavbar('character_creation'); // Passa o identificador da página atual
+            inicializarDistribuicaoAtributos();
+        });
+    </script>
+</body>
+</html>
