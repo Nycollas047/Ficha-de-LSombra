@@ -43,6 +43,9 @@
                 </div>
                 <div class="col-md-4">
                     <h3>Adicionar Fragmentos</h3>
+                    <div class="input-group mb-2">
+                        <select id="select-personagem-fragmentos" class="form-select" aria-label="Selecionar Personagem para Fragmentos"></select>
+                    </div>
                     <div class="input-group">
                         <input type="number" id="input-fragmentos-mestre" class="form-control" value="10" min="1">
                         <button class="btn btn-primary" onclick="adicionarFragmentosMestre()">Adicionar</button>
@@ -50,6 +53,9 @@
                 </div>
                 <div class="col-md-4">
                     <h3>Restaurar Vida</h3>
+                    <div class="input-group mb-2">
+                        <select id="select-personagem-vida" class="form-select" aria-label="Selecionar Personagem para Restaurar Vida"></select>
+                    </div>
                     <div class="input-group">
                         <input type="number" id="input-vida-mestre" class="form-control" value="1" min="1">
                         <button class="btn btn-primary" onclick="restaurarVidaMestre()">Restaurar</button>
@@ -135,6 +141,7 @@
             }
 
             atualizarFichaMestre();
+            atualizarDropdownsPersonagens(); // Nova função para popular os selects
 
             document.getElementById('preco-do-dia-info').textContent = currentSession.currentGameState.PrecoDoDiaFator === 1 ? 'Preços caem 25%' : (currentSession.currentGameState.PrecoDoDiaFator === 3 ? 'Preços sobem 50%' : 'Normal');
             document.getElementById('fase-atual-dia').textContent = MecanicasJogo.FasesDia[currentSession.currentGameState.FaseAtualIndex];
@@ -196,6 +203,34 @@
             });
         }
 
+        function atualizarDropdownsPersonagens() {
+            const selects = [
+                document.getElementById('select-personagem-fragmentos'),
+                document.getElementById('select-personagem-vida')
+            ];
+
+            selects.forEach(select => {
+                if (!select) return;
+                const currentValue = select.value;
+                select.innerHTML = ''; // Limpa as opções existentes
+
+                if (currentSession.Personagens.length === 0) {
+                    const option = document.createElement('option');
+                    option.textContent = 'Nenhum personagem';
+                    option.disabled = true;
+                    select.appendChild(option);
+                } else {
+                    currentSession.Personagens.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.ID;
+                        option.textContent = p.Nome;
+                        select.appendChild(option);
+                    });
+                }
+                select.value = currentValue;
+            });
+        }
+
         // --- Funções de Controles do Mestre ---
         function rolarD3Mestre() {
             currentSession.currentGameState.PrecoDoDiaFator = rolarDado(3);
@@ -204,27 +239,39 @@
         }
 
         function adicionarFragmentosMestre() {
-            if (currentSession.Personagens.length === 0) {
-                showToast("Nenhum personagem para adicionar fragmentos.", 'warning');
+            const personagemId = document.getElementById('select-personagem-fragmentos').value;
+            if (!personagemId || currentSession.Personagens.length === 0) {
+                showToast("Por favor, selecione um personagem.", 'warning');
                 return;
             }
-            const personagemAlvo = currentSession.Personagens[0]; // Simplificado para o primeiro personagem
+            const personagemAlvo = currentSession.Personagens.find(p => p.ID === personagemId);
+            if (!personagemAlvo) {
+                showToast("Personagem não encontrado.", 'danger');
+                return;
+            }
+
             const quantidade = parseInt(document.getElementById('input-fragmentos-mestre').value);
             if (isNaN(quantidade) || quantidade <= 0) {
                 showToast('Por favor, insira uma quantidade válida e positiva.', 'danger');
                 return;
             }
             personagemAlvo.Recursos.FragmentosEsperanca.ValorAtual += quantidade;
-            showToast(`Adicionado ${quantidade} Fragmentos de Esperança ao ${personagemAlvo.Nome}.`, 'success');
+            showToast(`Adicionado ${quantidade} Fragmentos de Esperança para ${personagemAlvo.Nome}.`, 'success');
             atualizarUI();
         }
 
         function restaurarVidaMestre() {
-            if (currentSession.Personagens.length === 0) {
-                showToast("Nenhum personagem para restaurar vida.", 'warning');
+            const personagemId = document.getElementById('select-personagem-vida').value;
+            if (!personagemId || currentSession.Personagens.length === 0) {
+                showToast("Por favor, selecione um personagem.", 'warning');
                 return;
             }
-            const personagemAlvo = currentSession.Personagens[0]; // Simplificado para o primeiro personagem
+            const personagemAlvo = currentSession.Personagens.find(p => p.ID === personagemId);
+            if (!personagemAlvo) {
+                showToast("Personagem não encontrado.", 'danger');
+                return;
+            }
+
             const quantidade = parseInt(document.getElementById('input-vida-mestre').value);
             if (isNaN(quantidade) || quantidade <= 0) {
                 showToast('Por favor, insira uma quantidade válida e positiva.', 'danger');
